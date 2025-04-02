@@ -1,9 +1,4 @@
 
-Sure, here's a `README.md` starting draft you can drop right into your repository root. It lays the groundwork for collaboration, structure, and environment setup with clarity and consistency:
-
----
-
-```markdown
 # Final Project Repository
 
 This repository is the centralized workspace for our final project. The project topic is still under discussion, but active development has begun. All contributors are expected to follow the collaboration structure and guidelines outlined below.
