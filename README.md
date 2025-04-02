@@ -29,10 +29,6 @@ All work must occur under a relevantly named branch. Use one of the following br
   For fixing bugs or defects.  
   Example: `bugfix/images-not-appearing`
 
-- `refactor/<what-is-being-refactored>`  
-  For structural improvements that do not alter behavior.  
-  Example: `refactor/data-loader-cleanup`
-
 - `doc/<documentation-topic>`  
   For changes related to documentation.  
   Example: `doc/setup-instructions`
