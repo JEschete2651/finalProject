@@ -4,7 +4,7 @@ For any documentation or report writing that requires LaTeX, we recommend using 
 
 ---
 
-## 🧰 Required Tools
+## Required Tools
 
 - **TeXstudio** (LaTeX editor):  
   [https://www.texstudio.org/](https://www.texstudio.org/)
@@ -14,7 +14,7 @@ For any documentation or report writing that requires LaTeX, we recommend using 
 
 ---
 
-## 🛠️ Setup Instructions
+##  Setup Instructions
 
 1. **Install MiKTeX**  
    - Download and install MiKTeX from the link above.
@@ -31,7 +31,7 @@ For any documentation or report writing that requires LaTeX, we recommend using 
 
 ---
 
-## 📚 LaTeX Reference
+## LaTeX Reference
 
 - Full language guide and searchable reference:  
   [https://devdocs.io/latex/](https://devdocs.io/latex/)
