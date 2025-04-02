@@ -69,5 +69,5 @@ Further updates to this README will reflect the confirmed project direction, cod
 
 ##  Additional Resources
 
-- [LaTeX Environment Setup Guide](./LinkedDocs/latex-setup.md)
+- [LaTeX Environment Setup Guide](./documents/LinkedDocs/latex-setup.md)
 
