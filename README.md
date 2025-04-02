@@ -66,4 +66,7 @@ Tests, execution steps, and runtime instructions will be added once the project 
 ---
 
 Further updates to this README will reflect the confirmed project direction, coding standards, and contribution policies.
-```
+
+## 📝 Additional Resources
+
+- [LaTeX Environment Setup Guide](./latex-setup.md)
