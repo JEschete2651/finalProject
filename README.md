@@ -3,13 +3,13 @@
 
 This repository is the centralized workspace for our final project. The project topic is still under discussion, but active development has begun. All contributors are expected to follow the collaboration structure and guidelines outlined below.
 
-## 📦 Repository Link
+## Repository Link
 
 [https://github.com/JEschete2651/finalProject.git](https://github.com/JEschete2651/finalProject.git)
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 - **Jude Eschete**
 - **Ella Disanti**
@@ -17,7 +17,7 @@ This repository is the centralized workspace for our final project. The project 
 
 If you are working on this repository, please follow the branching strategy below when creating new branches. This ensures clarity in the commit history and facilitates clean collaboration.
 
-### 🔀 Branch Naming Convention
+### Branch Naming Convention
 
 All work must occur under a relevantly named branch. Use one of the following branch types:
 
@@ -37,11 +37,11 @@ Use lowercase letters and dashes for readability. Always create a Pull Request i
 
 ---
 
-## 🛠️ Cloning and Setup Instructions
+##  Cloning and Setup Instructions
 
 This project requires **Python 3.11 or higher**. Ensure your local environment meets this version requirement before proceeding.
 
-### 🔁 Clone the repository:
+### Clone the repository:
 
 ```bash
 git clone https://github.com/JEschete2651/finalProject.git
@@ -49,7 +49,7 @@ cd finalProject
 ```
 
 
-### 📦 Install dependencies (if applicable):
+###  Install dependencies (if applicable):
 
 ```bash
 pip install -r requirements.txt
@@ -59,7 +59,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🧪 Testing and Execution
+##  Testing and Execution
 
 Tests, execution steps, and runtime instructions will be added once the project structure is established.
 
@@ -67,6 +67,7 @@ Tests, execution steps, and runtime instructions will be added once the project 
 
 Further updates to this README will reflect the confirmed project direction, coding standards, and contribution policies.
 
-## 📝 Additional Resources
+##  Additional Resources
 
-- [LaTeX Environment Setup Guide](./latex-setup.md)
+- [LaTeX Environment Setup Guide](./LinkedDocs/latex-setup.md)
+
