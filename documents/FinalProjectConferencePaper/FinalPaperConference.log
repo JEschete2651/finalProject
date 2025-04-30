@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.12.17)  30 APR 2025 19:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.12.17)  30 APR 2025 19:58
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -371,7 +371,7 @@ L3 programming layer <2024-11-02>
  ) 
 Here is how much of TeX's memory you used:
  4192 strings out of 473650
- 66658 string characters out of 5717934
+ 66678 string characters out of 5717934
  471566 words of memory out of 5000000
  27267 multiletter control sequences out of 15000+600000
  591301 words of font info for 97 fonts, out of 8000000 for 9000
@@ -385,7 +385,7 @@ es/utmb8a.pfb><C:/Users/judee/AppData/Local/Programs/MiKTeX/fonts/type1/urw/tim
 es/utmbi8a.pfb><C:/Users/judee/AppData/Local/Programs/MiKTeX/fonts/type1/urw/ti
 mes/utmr8a.pfb><C:/Users/judee/AppData/Local/Programs/MiKTeX/fonts/type1/urw/ti
 mes/utmri8a.pfb>
-Output written on FinalPaperConference.pdf (1 page, 89554 bytes).
+Output written on FinalPaperConference.pdf (1 page, 89556 bytes).
 PDF statistics:
  42 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
