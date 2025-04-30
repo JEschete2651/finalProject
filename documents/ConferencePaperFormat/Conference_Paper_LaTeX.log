@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.12.17)  1 APR 2025 20:56
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.12.17)  3 APR 2025 18:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -335,6 +335,9 @@ LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 1
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
 
+
+LaTeX Warning: Reference `fig' on page 2 undefined on input line 212.
+
 LaTeX Font Info:    Trying to load font information for OMS+ptm on input line 2
 43.
 (C:\Users\judee\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\omsptm.fd
@@ -364,11 +367,15 @@ Before submitting the final camera ready copy, remember to:
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2024-11-02>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
  ) 
 Here is how much of TeX's memory you used:
  4289 strings out of 473650
- 68004 string characters out of 5717934
- 476713 words of memory out of 5000000
+ 68092 string characters out of 5717934
+ 476691 words of memory out of 5000000
  27344 multiletter control sequences out of 15000+600000
  609174 words of font info for 137 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -385,7 +392,7 @@ al/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/judee/AppData/Loc
 al/Programs/MiKTeX/fonts/type1/urw/times/utmbi8a.pfb><C:/Users/judee/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/judee/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Conference_Paper_LaTeX.pdf (3 pages, 139945 bytes).
+Output written on Conference_Paper_LaTeX.pdf (3 pages, 140336 bytes).
 PDF statistics:
  68 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
