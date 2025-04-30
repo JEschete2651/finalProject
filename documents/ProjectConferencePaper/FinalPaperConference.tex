@@ -1,0 +1,81 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+	
+	\title{Lexicon-Based Sentiment Analysis of Movie Reviews}
+	
+	\author{\IEEEauthorblockN{Jude Eschete}
+		\IEEEauthorblockA{\textit{Dept. of Computer Engineering} \\
+			\textit{Stevens Institute of Technology} \\
+			Hoboken, NJ, USA \\
+			jeschete@stevens.edu}
+		\and
+		\IEEEauthorblockN{Ella Disanti}
+		\IEEEauthorblockA{\textit{Dept. of Computer Engineering} \\
+			\textit{Stevens Institute of Technology} \\
+			Hoboken, NJ, USA \\
+			edesanti@stevens.edu}
+		\and
+		\IEEEauthorblockN{Raymond Donkemezuo}
+		\IEEEauthorblockA{\textit{Dept. of Computer Engineering} \\
+			\textit{Stevens Institute of Technology} \\
+			Hoboken, NJ, USA \\
+			rdonkemez@stevens.edu}
+	}
+	
+	\maketitle
+	
+	\begin{abstract}
+		This paper presents a lexicon-based sentiment analysis approach to classifying movie reviews using the Large Movie Review Dataset (IMDb). We investigate several lexicons, design a rule-based algorithm to account for negation, and implement key functions in Python. Our system preprocesses text, handles contextual polarity inversion, and classifies reviews as positive, negative, or neutral based on a custom scoring aggregation mechanism.
+	\end{abstract}
+	
+	\section{Background}
+	Sentiment analysis is a subfield of Natural Language Processing (NLP) aimed at extracting subjective information from textual data. Lexicon-based approaches rely on predefined dictionaries of words associated with sentiment scores. These methods are interpretable and lightweight compared to machine learning models but can be limited by context and domain-specific language. Our project builds a robust lexicon-based sentiment classifier, tailored for movie review data.
+	
+	\section{System Architecture}
+	Our system is structured around a custom Python class, \texttt{MovieSentimentAnalyzer}. It consists of several modular components:
+	\begin{itemize}
+		\item Data loading from a CSV file
+		\item Text preprocessing (cleaning, tokenization, stop word removal, stemming)
+		\item Negation handling with scope-based polarity inversion
+		\item Lexicon-based score aggregation
+		\item Sentiment classification logic
+	\end{itemize}
+	This modular design enables clean integration with datasets and easy extensibility for future improvements.
+	
+	\section{Design and Algorithms}
+	We implemented the following methods:
+	\begin{itemize}
+		\item \textbf{\texttt{load\_kaggle\_data(path)}}: Loads the IMDb dataset.
+		\item \textbf{\texttt{preprocess\_text(text)}}: Cleans and tokenizes input, removes stop words, applies stemming.
+		\item \textbf{\texttt{apply\_negation\_handling(tokens)}}: Detects negation terms and marks affected words.
+		\item \textbf{\texttt{compute\_sentiment\_score(tokens)}}: Aggregates word-level scores with negation adjustments.
+		\item \textbf{\texttt{classify\_sentiment(score)}}: Maps numerical score to a polarity label.
+		\item \textbf{\texttt{analyze\_review(text)}}: Executes the full analysis pipeline.
+	\end{itemize}
+	The negation handling method tags tokens within a 3-word window after negators such as \texttt{``not''} or \texttt{``never''}, inverting their sentiment scores if present in the lexicon.
+	
+	\section{Testing and Simulation Results (In Progress)}
+	Initial tests on a small subset of the IMDb dataset indicate that the system is functioning correctly in terms of classification logic. Reviews with clear positive or negative language are accurately scored. Ongoing work includes evaluating overall accuracy using labeled data and refining the lexicon for better domain coverage.
+	
+	\section{Conclusions (In Progress)}
+	Thus far, our lexicon-based sentiment analysis system shows promise for classifying movie reviews with minimal computational overhead. The modular design facilitates experimentation with various lexicons and preprocessing techniques. Final evaluation metrics will be provided upon full dataset integration and testing.
+	
+	\begin{thebibliography}{00}
+		\bibitem{b1} A. L. Maas et al., "Learning Word Vectors for Sentiment Analysis," in \textit{Proc. of the 49th Annual Meeting of the Association for Computational Linguistics}, 2011.
+		\bibitem{b2} O. Bulut, "Lexicon-Based Sentiment Analysis Using R," Medium, 2024.
+		\bibitem{b3} S. Narayanan, "Sentiment Analysis in NLP: Key Techniques and Insights," Sapien.io, 2025.
+		\bibitem{b4} P. Turney, "Thumbs up or thumbs down?: Semantic orientation applied to unsupervised classification of reviews," \textit{ACL}, 2002.
+		\bibitem{b5} Y. Liu et al., "Sentiment Analysis and Opinion Mining," \textit{Synthesis Lectures on Human Language Technologies}, 2012.
+	\end{thebibliography}
+	
+\end{document}

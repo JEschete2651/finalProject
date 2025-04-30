@@ -1,0 +1,72 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{parskip}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{CPE 593 – Milestone 2}
+\lhead{Sentiment Analysis Progress Report}
+\rfoot{Page \thepage}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+
+\begin{document}
+	
+	% Title Page
+	\begin{titlepage}
+		\centering
+		\vspace*{3cm}
+		{\Huge \textbf{Milestone 2 Progress Report}}\\[1.5cm]
+		{\LARGE \textbf{Lexicon-Based Sentiment Analysis of Movie Reviews}}\\[2cm]
+		
+			\large
+			\textbf{CPE-593}\linebreak\\
+
+
+			\textbf{Team Members:}\\
+			Jude Eschete\\
+			Ella Disanti\\
+			Raymond Donkemezuo\\
+		
+		\vfill
+		{\large \today}
+	\end{titlepage}
+	
+	% Main Content
+	\section*{Milestone 2 Status Summary}
+	
+	\subsection*{Research Completed}
+	The research phase is complete. We compared several popular sentiment lexicons including VADER, SentiWordNet, Bing Liu's lexicon, AFINN, and the NRC Emotion Lexicon. Each was evaluated based on domain relevance, scoring methods, and language coverage. For this milestone, we have implemented a custom lexicon-driven framework with extensibility to test additional lexicons in future phases. We also explored preprocessing and negation-handling techniques suitable for review-based sentiment classification.
+	
+	\subsection*{Algorithm/Solution Formed}
+	We have developed a complete lexicon-based sentiment classification system that uses token-level scoring with contextual negation awareness. Our class, \texttt{MovieSentimentAnalyzer}, includes:
+	\begin{itemize}
+		\item Text cleaning (lowercasing, punctuation removal)
+		\item Tokenization and stop word removal using NLTK
+		\item Porter stemming for base form normalization
+		\item Rule-based negation detection over a configurable window
+		\item Score aggregation via lexicon lookup with polarity inversion when needed
+		\item Polarity classification as \textit{positive}, \textit{negative}, or \textit{neutral}
+	\end{itemize}
+	The algorithm is designed to be lexicon-agnostic and modular, supporting drop-in replacement of the sentiment dictionary.
+	
+	\subsection*{Major Functions Implemented}
+	All core functions are implemented in \texttt{movie\_sentiment\_analyzer.py}. Major methods include:
+	
+	\begin{itemize}
+		\item \texttt{\textbf{\_\_init\_\_()}}: Initializes the analyzer with a sentiment lexicon and configures stop words, stemmer, and negation words.
+		\item \texttt{\textbf{load\_kaggle\_data(path)}}: Loads and validates CSV-formatted review data.
+		\item \texttt{\textbf{preprocess\_text(text)}}: Cleans text by removing punctuation, lowercasing, removing stop words, and applying stemming.
+		\item \texttt{\textbf{apply\_negation\_handling(tokens)}}: Tags tokens with negation status based on a predefined word list and scope.
+		\item \texttt{\textbf{compute\_sentiment\_score(tokens\_with\_negation)}}: Aggregates sentiment scores from the lexicon while inverting for negated terms.
+		\item \texttt{\textbf{classify\_sentiment(score)}}: Maps the final numerical score to a polarity class.
+		\item \texttt{\textbf{analyze\_review(text)}}: Complete end-to-end review analysis returning both sentiment label and score.
+	\end{itemize}
+	
+	These functions are integrated, thoroughly commented, and are prepped for testing.
+	
+\end{document}
