@@ -1,0 +1,130 @@
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject
+
+05/05/2025  08:51 PM    <DIR>          .
+04/30/2025  07:29 PM    <DIR>          ..
+04/30/2025  07:35 PM    <DIR>          code
+04/30/2025  07:25 PM    <DIR>          DataSet
+04/30/2025  07:53 PM    <DIR>          documents
+05/05/2025  08:52 PM               773 files.txt
+04/28/2025  06:12 PM             2,149 README.md
+04/01/2025  08:44 PM    <DIR>          references
+               2 File(s)          2,922 bytes
+
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\code
+
+04/30/2025  07:35 PM    <DIR>          .
+05/05/2025  08:51 PM    <DIR>          ..
+04/30/2025  07:22 PM             3,237 movie_sentiment_analyzer.py
+               1 File(s)          3,237 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\DataSet
+
+04/30/2025  07:25 PM    <DIR>          .
+05/05/2025  08:51 PM    <DIR>          ..
+04/30/2025  07:06 PM             6,148 .DS_Store
+04/30/2025  07:17 PM                22 IMDB Dataset.csv.zip
+04/30/2025  07:06 PM    <DIR>          kaggle_dataset
+               2 File(s)          6,170 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\DataSet\kaggle_dataset
+
+04/30/2025  07:06 PM    <DIR>          .
+04/30/2025  07:25 PM    <DIR>          ..
+04/30/2025  07:06 PM             6,148 .DS_Store
+04/30/2025  07:06 PM           935,506 imdb.vocab
+04/30/2025  07:06 PM           992,556 imdbEr.txt
+04/30/2025  07:06 PM             4,129 README
+04/30/2025  07:06 PM    <DIR>          test
+04/30/2025  07:06 PM    <DIR>          train
+               4 File(s)      1,938,339 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\DataSet\kaggle_dataset\test
+
+04/30/2025  07:06 PM    <DIR>          .
+04/30/2025  07:06 PM    <DIR>          ..
+04/30/2025  07:06 PM        20,230,283 labeledBow.feat
+04/30/2025  07:06 PM         4,539,458 neg.7z
+04/30/2025  07:06 PM         4,598,444 pos.7z
+04/30/2025  07:06 PM           625,000 urls_neg.txt
+04/30/2025  07:06 PM           625,000 urls_pos.txt
+               5 File(s)     30,618,185 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\DataSet\kaggle_dataset\train
+
+04/30/2025  07:06 PM    <DIR>          .
+04/30/2025  07:06 PM    <DIR>          ..
+04/30/2025  07:06 PM             6,148 .DS_Store
+04/30/2025  07:06 PM        21,046,197 labeledBow.feat
+04/30/2025  07:06 PM         4,625,956 neg.7z
+04/30/2025  07:06 PM         4,756,479 pos.7z
+04/30/2025  07:06 PM        17,887,655 unsup.7z
+04/30/2025  07:06 PM        41,398,699 unsupBow.feat
+04/30/2025  07:06 PM           625,000 urls_neg.txt
+04/30/2025  07:06 PM           625,000 urls_pos.txt
+04/30/2025  07:06 PM         2,500,000 urls_unsup.txt
+               9 File(s)     93,471,134 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\documents
+
+04/30/2025  07:53 PM    <DIR>          .
+05/05/2025  08:51 PM    <DIR>          ..
+04/30/2025  07:04 PM    <DIR>          ConferencePaperFormat
+04/30/2025  07:58 PM    <DIR>          FinalProjectConferencePaper
+04/28/2025  06:12 PM    <DIR>          LinkedDocs
+05/05/2025  08:47 PM    <DIR>          ProgressReports
+               0 File(s)              0 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\documents\ConferencePaperFormat
+
+04/30/2025  07:04 PM    <DIR>          .
+04/30/2025  07:53 PM    <DIR>          ..
+04/03/2025  06:04 PM             2,259 Conference_Paper_LaTeX.aux
+04/03/2025  06:04 PM            16,351 Conference_Paper_LaTeX.log
+04/03/2025  06:04 PM           140,336 Conference_Paper_LaTeX.pdf
+04/03/2025  06:04 PM            45,923 Conference_Paper_LaTeX.synctex.gz
+04/01/2025  08:56 PM            16,000 Conference_Paper_LaTeX.tex
+               5 File(s)        220,869 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\documents\FinalProjectConferencePaper
+
+04/30/2025  07:58 PM    <DIR>          .
+04/30/2025  07:53 PM    <DIR>          ..
+04/30/2025  07:58 PM               758 FinalPaperConference.aux
+04/30/2025  07:58 PM            15,999 FinalPaperConference.log
+04/30/2025  07:58 PM            89,556 FinalPaperConference.pdf
+04/30/2025  07:58 PM            13,466 FinalPaperConference.synctex.gz
+04/30/2025  07:58 PM             5,011 FinalPaperConference.tex
+               5 File(s)        124,790 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\documents\LinkedDocs
+
+04/28/2025  06:12 PM    <DIR>          .
+04/30/2025  07:53 PM    <DIR>          ..
+04/28/2025  06:12 PM             1,798 latex-setup.md
+               1 File(s)          1,798 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\documents\ProgressReports
+
+05/05/2025  08:47 PM    <DIR>          .
+04/30/2025  07:53 PM    <DIR>          ..
+05/05/2025  08:47 PM           140,488 CPE593_ProgressReport_v1.pdf
+04/30/2025  07:40 PM               162 Milestone2.aux
+04/30/2025  07:40 PM            13,473 Milestone2.log
+04/30/2025  07:40 PM                 0 Milestone2.out
+04/30/2025  07:40 PM            61,699 Milestone2.pdf
+04/30/2025  07:40 PM             8,987 Milestone2.synctex.gz
+04/30/2025  07:40 PM             3,429 Milestone2.tex
+               7 File(s)        228,238 bytes
+
+ Directory of D:\Users\judee\Google Drive\School\Classes\CPE593\finalProject\references
+
+04/01/2025  08:44 PM    <DIR>          .
+05/05/2025  08:51 PM    <DIR>          ..
+04/01/2025  08:44 PM                 0 deleteme.txt
+               1 File(s)              0 bytes
+
+     Total Files Listed:
+             171 File(s)    298,121,889 bytes
+             301 Dir(s)  3,727,363,035,136 bytes free
