@@ -167,7 +167,6 @@ class MovieSentimentAnalyzer:
         return label, score
 
     def run_unsup_training_gui(self):
-        # your original unsupervised + PCA + LR
         def get_file(title="Select file") -> str:
             root = Tk(); root.withdraw()
             path = filedialog.askopenfilename(title=title)
@@ -186,8 +185,6 @@ class MovieSentimentAnalyzer:
         vocab_path = get_file("Select imdb.vocab")
         if not vocab_path:
             print("No vocab selected."); return
-
-        # ... rest remains your original code ...
 
     def train_pca_lr(self):
         """Train PCA+LR on labeled+unsup, save both model+vocab, update settings."""
