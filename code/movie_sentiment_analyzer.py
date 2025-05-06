@@ -159,6 +159,7 @@ class MovieSentimentAnalyzer:
                 print(f"{w} (neg={neg}) => {(-val if neg else val):.2f}")
         return self.classify_sentiment(score), score
 
+
     def train_pca_lr(self):
         # paths
         for key, title in [("pca_labeled","Select labeledBow.feat"),
