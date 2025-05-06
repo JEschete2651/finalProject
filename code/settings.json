@@ -1,0 +1,21 @@
+{
+  "lexicon_path": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/custom_lexicon.csv",
+  "pca_labeled": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train/labeledBow.feat",
+  "pca_unsup": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train/unsupBow.feat",
+  "pca_vocab": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train/imdb.vocab",
+  "pca_test": "",
+  "dir_train": "",
+  "dir_test": "",
+  "verbose_tokens": true,
+  "log_init": true,
+  "log_preprocess": true,
+  "log_negation": true,
+  "log_score_compute": true,
+  "log_lexicon_debug": true,
+  "log_pca_training_debug": true,
+  "log_pca_test_debug": true,
+  "log_dir_train_debug": true,
+  "log_dir_test_debug": true,
+  "log_settings_load": true,
+  "log_settings_save": true
+}

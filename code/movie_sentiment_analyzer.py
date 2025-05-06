@@ -1,22 +1,68 @@
-import numpy as np  
-import pandas as pd  
-import os  
-import re  
-import string  
-import nltk 
-from nltk.corpus import stopwords  
-from nltk.stem import PorterStemmer  
-from typing import List, Tuple, Dict 
-from sklearn.decomposition import PCA  
-from sklearn.linear_model import LogisticRegression 
-from sklearn.metrics import classification_report  
-from sklearn.model_selection import train_test_split 
-from sklearn.pipeline import Pipeline 
-from sklearn.base import BaseEstimator, TransformerMixin 
-from tkinter import filedialog, Tk 
+import os
+import re
+import string
+import json
+import joblib
+import numpy as np
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from typing import List, Tuple, Dict
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+from sklearn.feature_extraction.text import CountVectorizer
+from tkinter import filedialog, Tk
 
-
+# Download required NLTK data
 nltk.download('stopwords')
+nltk.download('wordnet')
+
+# ─── Settings Load/Save ───────────────────────────────────────────────────────
+
+SETTINGS_FILE = "settings.json"
+
+def load_settings() -> Dict:
+    try:
+        with open(SETTINGS_FILE, 'r') as f:
+            settings = json.load(f)
+    except FileNotFoundError:
+        # defaults
+        settings = {
+            "lexicon_path": "",
+            "pca_labeled": "",
+            "pca_unsup": "",
+            "pca_vocab": "",
+            "pca_test": "",
+            "dir_train": "",
+            "dir_test": "",
+            "verbose_tokens": False,
+            "log_init": True,
+            "log_preprocess": True,
+            "log_negation": True,
+            "log_score_compute": True,
+            "log_lexicon_debug": True,
+            "log_pca_training_debug": True,
+            "log_pca_test_debug": True,
+            "log_dir_train_debug": True,
+            "log_dir_test_debug": True,
+            "log_settings_load": True,
+            "log_settings_save": True
+        }
+    return settings
+
+settings = load_settings()
+if settings.get("log_settings_load", True):
+    print(f"Settings loaded from {SETTINGS_FILE}: {settings}")
+
+def save_settings():
+    with open(SETTINGS_FILE, 'w') as f:
+        json.dump(settings, f, indent=2)
+    if settings.get("log_settings_save", True):
+        print(f"Settings saved to {SETTINGS_FILE}")
+
+# ─── MovieSentimentAnalyzer ───────────────────────────────────────────────────
 
 class MovieSentimentAnalyzer:
     """
@@ -24,374 +70,498 @@ class MovieSentimentAnalyzer:
     and optionally train a supervised model using features derived from unsupervised data.
     """
     def __init__(self, lexicon: Dict[str, float]):
-        """
-        Initializes the sentiment analyzer.
-
-        Args:
-            lexicon (Dict[str, float]): A dictionary mapping words (stems) to sentiment scores.
-                                         Positive scores indicate positive sentiment, negative scores
-                                         indicate negative sentiment.
-        """
-        self.lexicon = lexicon  # Store the provided sentiment lexicon
-        self.stop_words = set(stopwords.words('english'))  # Load English stop words
-        self.stemmer = PorterStemmer()  # Initialize the Porter Stemmer
-        # Define words that indicate negation
-        self.negation_words = {"not", "no", "never", "none", "n't"}
-        # Define the scope (number of words) affected by a negation word
+        self.lexicon = lexicon
+        self.stop_words = set(stopwords.words('english'))
+        self.stemmer = PorterStemmer()             # retained for backward compatibility
+        self.lemmatizer = WordNetLemmatizer()      # new lemmatizer for improved accuracy
+        self.negation_words = {
+            "not", "no", "never", "none", "n't", "without",
+            "neither", "nor", "hardly", "barely", "scarcely",
+            "don't", "doesn't", "isn't", "wasn't", "weren't",
+            "can't", "won't", "shouldn't", "couldn't", "wouldn't"
+        }
         self.negation_scope = 3
-        print("Sentiment analyzer initialized with lexicon.")
-
-    def load_kaggle_data(self, path: str) -> pd.DataFrame:
-        """
-        Loads a dataset from a CSV file using pandas.
-
-        Args:
-            path (str): The file path to the CSV dataset.
-
-        Returns:
-            pd.DataFrame: A pandas DataFrame containing the loaded data.
-                          Returns an empty DataFrame if the file is not found.
-        """
-        try:
-            # Attempt to read the CSV file into a DataFrame
-            df = pd.read_csv(path)
-            print(f"Loaded dataset with {len(df)} entries.")
-            return df
-        except FileNotFoundError:
-            # Handle the case where the file does not exist
-            print(f"File not found: {path}")
-            return pd.DataFrame() # Return an empty DataFrame
+        # placeholders for PCA+LR
+        self.pca = None
+        self.clf = None
+        if settings.get("log_init", True):
+            print("Sentiment analyzer initialized with lexicon.")
 
     def preprocess_text(self, text: str) -> List[str]:
         """
-        Preprocesses raw text by converting to lowercase, removing punctuation,
-        tokenizing, removing stop words, and stemming.
-
-        Args:
-            text (str): The raw text string to preprocess.
-
-        Returns:
-            List[str]: A list of processed (stemmed, non-stop word) tokens.
+        Lowercase, remove punctuation (except apostrophes), tokenize,
+        remove stopwords (but preserve negators), and lemmatize.
         """
-        # Convert text to lowercase
-        text = text.lower()
-        # Remove punctuation using regex substitution
-        text = re.sub(f"[{re.escape(string.punctuation)}]", "", text)
-        # Split the text into individual words (tokens)
-        tokens = text.split()
-        # Filter out stop words and apply stemming to the remaining words
-        filtered_tokens = [self.stemmer.stem(word) for word in tokens if word not in self.stop_words]
-        return filtered_tokens
+        if settings.get("log_preprocess", True):
+            print(f"Original text: {text}")
+        text_lower = text.lower()
+        if settings.get("log_preprocess", True):
+            print(f"Lowercased text: {text_lower}")
+        # remove all punctuation except apostrophes so "don't" remains intact
+        punctuation = string.punctuation.replace("'", "")
+        cleaned_text = re.sub(f"[{re.escape(punctuation)}]", "", text_lower)
+        if settings.get("log_preprocess", True):
+            print(f"Removed punctuation (except apostrophes): {cleaned_text}")
+        tokens = cleaned_text.split()
+        if settings.get("log_preprocess", True):
+            print(f"Tokenized text: {tokens}")
+        # Lemmatize and filter out stopwords, but always keep negation words
+        lemmatized_tokens = [
+            self.lemmatizer.lemmatize(w)
+            for w in tokens
+            if (w in self.negation_words) or (w not in self.stop_words)
+        ]
+        if settings.get("log_preprocess", True):
+            print(f"Lemmatized tokens (stopwords removed, negators kept): {lemmatized_tokens}")
+        return lemmatized_tokens
 
     def apply_negation_handling(self, tokens: List[str]) -> List[Tuple[str, bool]]:
-        """
-        Applies simple negation handling to a list of tokens.
-        Marks tokens following a negation word as negated.
-
-        Args:
-            tokens (List[str]): A list of preprocessed tokens.
-
-        Returns:
-            List[Tuple[str, bool]]: A list of tuples, where each tuple contains
-                                     a token and a boolean indicating if it's negated.
-        """
-        result = [] # List to store (token, is_negated) tuples
-        i = 0 # Index for iterating through tokens
+        result = []
+        i = 0
+        if settings.get("log_negation", True):
+            print(f"Tokens before negation handling: {tokens}")
         while i < len(tokens):
-            token = tokens[i]
-            # Check if the current token is a negation word
-            if token in self.negation_words:
-                # Mark the next 'negation_scope' tokens as negated
+            if tokens[i] in self.negation_words:
+                if settings.get("log_negation", True):
+                    print(f"Negation word '{tokens[i]}' detected. Negating next {self.negation_scope} tokens.")
                 for j in range(i + 1, min(i + 1 + self.negation_scope, len(tokens))):
-                    # Append the subsequent token with negated flag set to True
                     result.append((tokens[j], True))
-                # Skip the negation word and the words within its scope
-                i += self.negation_scope # Note: This skips the negation word itself AND the scope.
-                                         # Consider if the negation word itself should be added (likely not needed for scoring).
-                                         # Also, check if `i += self.negation_scope + 1` might be intended if the scope starts *after* the neg word.
-                                         # Current logic correctly processes words *after* negation up to scope limit.
+                i += self.negation_scope + 1
             else:
-                # If not a negation word, append the token with negated flag as False
-                result.append((token, False))
-                # Move to the next token
+                result.append((tokens[i], False))
                 i += 1
+        if settings.get("log_negation", True):
+            print(f"Tokens after negation handling: {result}")
         return result
 
     def compute_sentiment_score(self, tokens_with_negation: List[Tuple[str, bool]]) -> float:
-        """
-        Computes the overall sentiment score for a list of tokens,
-        considering negation.
-
-        Args:
-            tokens_with_negation (List[Tuple[str, bool]]): A list of (token, is_negated) tuples.
-
-        Returns:
-            float: The calculated sentiment score. Positive values indicate positive sentiment,
-                   negative values indicate negative sentiment.
-        """
-        score = 0.0 # Initialize the total score
-        # Iterate through each token and its negation status
-        for word, negated in tokens_with_negation:
-            # Get the base score from the lexicon, defaulting to 0.0 if word not found
-            base_score = self.lexicon.get(word, 0.0)
-            # If the word is marked as negated, invert its score
-            if negated:
-                base_score *= -1
-            # Add the possibly modified score to the total
-            score += base_score
+        if settings.get("log_score_compute", True):
+            print(f"Computing sentiment score for tokens: {tokens_with_negation}")
+        score = 0.0
+        for word, neg in tokens_with_negation:
+            base = self.lexicon.get(word, 0.0)
+            if settings.get("log_score_compute", True):
+                print(f"Word '{word}': base score {base}, negated: {neg}")
+            score += -base if neg else base
+        if settings.get("log_score_compute", True):
+            print(f"Total sentiment score: {score}")
         return score
 
     def classify_sentiment(self, score: float) -> str:
-        """
-        Classifies sentiment as 'positive' or 'negative' based on the score.
-
-        Args:
-            score (float): The sentiment score.
-
-        Returns:
-            str: 'positive' if score is >= 0, 'negative' otherwise.
-        """
-        # Classify based on a simple threshold (0)
-        if score >= 0:
-            return "positive"
-        else:
-            return "negative"
+        return "positive" if score >= 0 else "negative"
 
     def analyze_review(self, text: str) -> Tuple[str, float]:
-        """
-        Performs end-to-end sentiment analysis on a single movie review text.
-
-        Args:
-            text (str): The movie review text.
-
-        Returns:
-            Tuple[str, float]: A tuple containing the predicted sentiment label ('positive'/'negative')
-                               and the calculated sentiment score.
-        """
-        # 1. Preprocess the text
         tokens = self.preprocess_text(text)
-        # 2. Apply negation handling
-        tokens_with_neg = self.apply_negation_handling(tokens)
-        # 3. Compute the sentiment score
-        score = self.compute_sentiment_score(tokens_with_neg)
-        # 4. Classify the sentiment based on the score
+        tokens_neg = self.apply_negation_handling(tokens)
+        score = self.compute_sentiment_score(tokens_neg)
+
+        # only print token-level debug if verbose_tokens==True
+        if settings.get("verbose_tokens", False):
+            for token, is_neg in tokens_neg:
+                base = self.lexicon.get(token, 0.0)
+                if is_neg:
+                    base *= -1
+                print(f"{token} (negated: {is_neg}) => {base}")
+
         label = self.classify_sentiment(score)
         return label, score
 
     def run_unsup_training_gui(self):
-        """
-        Runs a process using a GUI to select files for training a sentiment classifier.
-        This method uses unsupervised data (via PCA) to potentially improve
-        features for a supervised Logistic Regression model trained on labeled data.
-        It expects data in the libsvm/svmlight format often used in NLP datasets like IMDB.
-        """
-
+        # your original unsupervised + PCA + LR
         def get_file(title="Select file") -> str:
-            """Helper function to open a file dialog using Tkinter."""
-            root = Tk() 
-            root.withdraw() 
-            
+            root = Tk(); root.withdraw()
             path = filedialog.askopenfilename(title=title)
             root.update()
-            # root.destroy() 
             return path
 
-        # --- File Selection ---
-        print("Select labeledBow.feat file...")
+        print("Select labeledBow.feat...")
         labeled_path = get_file("Select labeledBow.feat")
-        if not labeled_path: # Exit if no file selected
-            print("No labeled data file selected. Exiting training.")
-            return
-
-        print("Select unsupBow.feat file...")
+        if not labeled_path:
+            print("No labeled data selected."); return
+        print("Select unsupBow.feat...")
         unsup_path = get_file("Select unsupBow.feat")
-        if not unsup_path: # Exit if no file selected
-            print("No unsupervised data file selected. Exiting training.")
-            return
-
-        print("Select imdb.vocab file...")
+        if not unsup_path:
+            print("No unsupervised data selected."); return
+        print("Select imdb.vocab...")
         vocab_path = get_file("Select imdb.vocab")
-        if not vocab_path: # Exit if no file selected
-            print("No vocabulary file selected. Exiting training.")
+        if not vocab_path:
+            print("No vocab selected."); return
+
+        # ... rest remains your original code ...
+
+    def train_pca_lr(self):
+        """Train PCA+LR on labeled+unsup, save both model+vocab, update settings."""
+        for key, title in [("pca_labeled","Select labeledBow.feat"),
+                           ("pca_unsup","Select unsupBow.feat"),
+                           ("pca_vocab","Select imdb.vocab")]:
+            p = settings.get(key,"")
+            if not p or not os.path.exists(p):
+                if settings.get("log_pca_training_debug", True):
+                    print(f"Requesting path for {key} via GUI.")
+                root=Tk(); root.withdraw()
+                p = filedialog.askopenfilename(title=title)
+                root.update()
+                if not p:
+                    print("Training cancelled.")
+                    return
+                settings[key] = p
+                save_settings()
+            else:
+                if settings.get("log_pca_training_debug", True):
+                    print(f"Using saved {key}: {p}")
+
+        lab, uns, vocabf = settings["pca_labeled"], settings["pca_unsup"], settings["pca_vocab"]
+        if settings.get("log_pca_training_debug", True):
+            print("Loading vocabulary file...")
+        with open(vocabf,'r',encoding='utf-8') as f:
+            vocab_list = [w.strip() for w in f]
+        vsz = len(vocab_list)
+        if settings.get("log_pca_training_debug", True):
+            print(f"Vocabulary size: {vsz}")
+
+        def load_lab(path):
+            X,y = [],[]
+            for ln in open(path,'r',encoding='utf-8'):
+                toks=ln.split()
+                if not toks: continue
+                try: r=int(toks[0])
+                except: continue
+                labl = 1 if r>6 else 0 if r<5 else None
+                if labl is None: continue
+                vec = np.zeros(vsz)
+                for t in toks[1:]:
+                    if ':' in t:
+                        i,c=map(int,t.split(':'))
+                        if 0<=i<vsz: vec[i]=c
+                X.append(vec); y.append(labl)
+            return np.array(X), np.array(y)
+
+        def load_uns(path):
+            X=[]
+            for ln in open(path,'r',encoding='utf-8'):
+                toks=ln.split()
+                if not toks: continue
+                if ':' not in toks[0]: toks=toks[1:]
+                vec=np.zeros(vsz)
+                for t in toks:
+                    if ':' in t:
+                        i,c=map(int,t.split(':'))
+                        if 0<=i<vsz: vec[i]=c
+                X.append(vec)
+            return np.array(X)
+
+        if settings.get("log_pca_training_debug", True):
+            print("Loading labeled data...")
+        Xl, yl = load_lab(lab)
+        if settings.get("log_pca_training_debug", True):
+            print(f"Labeled data loaded: {Xl.shape[0]} samples")
+        Xu = load_uns(uns)
+        if settings.get("log_pca_training_debug", True):
+            print(f"Unsupervised data loaded: {Xu.shape[0]} samples")
+
+        self.pca = PCA(n_components=100, random_state=42)
+        if settings.get("log_pca_training_debug", True):
+            print("Fitting PCA on unsupervised data...")
+        self.pca.fit(Xu)
+        if settings.get("log_pca_training_debug", True):
+            print("PCA fit complete. Transforming labeled data...")
+        Xr = self.pca.transform(Xl)
+
+        self.clf = LogisticRegression(max_iter=1000, random_state=42)
+        if settings.get("log_pca_training_debug", True):
+            print("Training Logistic Regression classifier...")
+        self.clf.fit(Xr, yl)
+        if settings.get("log_pca_training_debug", True):
+            print("Classifier training complete.")
+
+        joblib.dump((self.pca, self.clf, vocab_list), "pca_lr_model.joblib")
+        print("PCA+LR trained and saved to 'pca_lr_model.joblib'")
+
+    def test_pca_lr(self):
+        """Load PCA+LR model and run on a labeledBow.feat for test (remember path)."""
+        if not os.path.exists("pca_lr_model.joblib"):
+            print("No PCA+LR model found. Train first.")
             return
 
-        # --- Data Loading Helper Functions ---
-        def load_vocab(vocab_file: str) -> List[str]:
-            """Loads vocabulary from a file (one word per line)."""
+        tf = settings.get("pca_test","")
+        if not tf or not os.path.exists(tf):
+            if settings.get("log_pca_test_debug", True):
+                print("Requesting test file for PCA+LR via GUI.")
+            root=Tk(); root.withdraw()
+            tf = filedialog.askopenfilename(title="Select labeledBow.feat for TEST")
+            root.update()
+            if not tf:
+                print("Testing cancelled.")
+                return
+            settings["pca_test"] = tf
+            save_settings()
+        else:
+            if settings.get("log_pca_test_debug", True):
+                print(f"Using saved pca_test: {tf}")
+
+        self.pca, self.clf, vocab_list = joblib.load("pca_lr_model.joblib")
+        if settings.get("log_pca_test_debug", True):
+            print("Model loaded. Preparing test data...")
+        vsz = len(vocab_list)
+
+        X, y = [], []
+        for ln in open(tf, 'r', encoding='utf-8'):
+            toks = ln.split()
+            if not toks: continue
             try:
-                with open(vocab_file, 'r', encoding='utf-8') as f: # Added encoding
-                    return [line.strip() for line in f]
-            except FileNotFoundError:
-                print(f"Vocabulary file not found: {vocab_path}")
-                return []
-            except Exception as e:
-                print(f"Error reading vocabulary file {vocab_path}: {e}")
-                return []
+                r = int(toks[0])
+            except:
+                continue
+            labl = 1 if r > 6 else 0 if r < 5 else None
+            if labl is None: continue
+            vec = np.zeros(vsz)
+            for t in toks[1:]:
+                if ':' in t:
+                    i, c = map(int, t.split(':'))
+                    if 0 <= i < vsz:
+                        vec[i] = c
+            X.append(vec)
+            y.append(labl)
 
-        def load_feat_file(filepath: str, vocab_size: int) -> Tuple[np.ndarray, np.ndarray]:
-            """
-            Loads labeled data from a .feat file (libsvm format variant).
-            Assumes first element is a rating score (1-10), followed by index:count pairs.
-            Converts ratings > 6 to 1 (positive), < 5 to 0 (negative), ignores 5-6.
-            """
-            data, labels = [], []
-            try:
-                with open(filepath, 'r', encoding='utf-8') as f: # Added encoding
-                    for line_num, line in enumerate(f):
-                        try:
-                            # Split line into parts and convert to integers
-                            parts = list(map(int, line.strip().split()))
-                            # Determine label based on the rating (first element)
-                            rating = parts[0]
-                            if rating > 6:
-                                label = 1 # Positive
-                            elif rating < 5:
-                                label = 0 # Negative
-                            else:
-                                continue # Skip neutral reviews (rating 5 or 6)
 
-                            # Create a sparse feature vector (initialized to zeros)
-                            features = np.zeros(vocab_size)
-                            # Populate feature vector using index:count pairs
-                            # Starts from index 1, step 2 (index, count, index, count...)
-                            for i in range(1, len(parts), 2):
-                                feature_index = parts[i]
-                                feature_count = parts[i+1]
-                                if 0 <= feature_index < vocab_size: # Check index bounds
-                                    features[feature_index] = feature_count
-                                else:
-                                    print(f"Warning: Feature index {feature_index} out of bounds (vocab size {vocab_size}) in {filepath}, line {line_num+1}. Skipping feature.")
-                            data.append(features)
-                            labels.append(label)
-                        except (ValueError, IndexError) as e:
-                            print(f"Warning: Skipping malformed line {line_num+1} in {filepath}: {line.strip()} ({e})")
-            except FileNotFoundError:
-                 print(f"Feature file not found: {filepath}")
-                 return np.array([]), np.array([]) # Return empty arrays
-            except Exception as e:
-                 print(f"Error reading feature file {filepath}: {e}")
-                 return np.array([]), np.array([]) # Return empty arrays
+        Xr = self.pca.transform(np.array(X))
+        if settings.get("log_pca_test_debug", True):
+            print("Test data transformed. Running predictions...")
+        preds = self.clf.predict(Xr)
+        print("\nPCA+LR Test Report:")
+        print(classification_report(y, preds, target_names=['neg','pos']))
 
-            return np.array(data), np.array(labels)
+# ─── Directory-based supervised train/test ───────────────────────────────────
 
-        def load_unsup_feat(filepath: str, vocab_size: int) -> np.ndarray:
-            """
-            Loads unsupervised data from a .feat file (libsvm format variant).
-            Assumes no label/rating at the start, just index:count pairs.
-            """
-            data = []
-            try:
-                with open(filepath, 'r', encoding='utf-8') as f: # Added encoding
-                    for line_num, line in enumerate(f):
-                        try:
-                            # Split line into parts and convert to integers
-                            parts = list(map(int, line.strip().split()))
-                            # Create a sparse feature vector
-                            features = np.zeros(vocab_size)
-                            # Populate feature vector using index:count pairs
-                            # Starts from index 0, step 2 (index, count, index, count...)
-                            for i in range(0, len(parts), 2):
-                                feature_index = parts[i]
-                                feature_count = parts[i+1]
-                                if 0 <= feature_index < vocab_size: # Check index bounds
-                                     features[feature_index] = feature_count
-                                else:
-                                    print(f"Warning: Feature index {feature_index} out of bounds (vocab size {vocab_size}) in {filepath}, line {line_num+1}. Skipping feature.")
-                            data.append(features)
-                        except (ValueError, IndexError) as e:
-                             print(f"Warning: Skipping malformed line {line_num+1} in {filepath}: {line.strip()} ({e})")
-            except FileNotFoundError:
-                print(f"Unsupervised feature file not found: {filepath}")
-                return np.array([]) # Return empty array
-            except Exception as e:
-                print(f"Error reading unsupervised feature file {filepath}: {e}")
-                return np.array([]) # Return empty array
-            return np.array(data)
+def train_directory_supervised():
+    """Train on a TRAIN dir (neg/pos), save model, remember path."""
+    td = settings.get("dir_train","")
+    if not td or not os.path.isdir(td):
+        if settings.get("log_dir_train_debug", True):
+            print("Requesting TRAIN directory via GUI.")
+        root=Tk(); root.withdraw()
+        td = filedialog.askdirectory(title="Select TRAIN directory")
+        root.update()
+        if not td:
+            print("Cancelled.")
+            return
+        settings["dir_train"] = td
+        save_settings()
+    else:
+        if settings.get("log_dir_train_debug", True):
+            print(f"Using saved dir_train: {td}")
 
-        # --- Data Loading and Preprocessing ---
-        vocab = load_vocab(vocab_path)
-        if not vocab: # Exit if vocab loading failed
-             print("Vocabulary is empty. Exiting training.")
-             return
-        vocab_size = len(vocab)
-        print(f"Vocabulary size: {vocab_size}")
+    texts, labels = [], []
+    for lbl,val in [('neg',0),('pos',1)]:
+        sub=os.path.join(td,lbl)
+        if not os.path.isdir(sub): continue
+        for fn in os.listdir(sub):
+            if fn.endswith('.txt'):
+                texts.append(open(os.path.join(sub,fn),encoding='utf-8').read())
+                labels.append(val)
 
-        X_labeled, y_labeled = load_feat_file(labeled_path, vocab_size)
-        if X_labeled.size == 0 or y_labeled.size == 0: # Check if loading failed
-             print("Failed to load labeled data or data is empty. Exiting training.")
-             return
-        print(f"Loaded labeled data shape: {X_labeled.shape}")
+    vect = CountVectorizer(max_features=10000)
+    X = vect.fit_transform(texts)
+    clf = LogisticRegression(max_iter=1000, random_state=42)
+    clf.fit(X, labels)
 
-        X_unsup = load_unsup_feat(unsup_path, vocab_size)
-        if X_unsup.size == 0: # Check if loading failed
-             print("Failed to load unsupervised data or data is empty. Exiting training.")
-             return
-        print(f"Loaded unsupervised data shape: {X_unsup.shape}")
+    joblib.dump((vect, clf), "dir_sup_model.joblib")
+    print("Directory-based model trained & saved to 'dir_sup_model.joblib'")
 
-        # --- PCA Dimension Reduction ---
-        print("Fitting PCA on unsupervised data...")
-        # Initialize PCA to reduce dimensions to 100
-        # Using unsupervised data helps find general patterns in word usage
-        pca = PCA(n_components=100, random_state=42) # Added random_state for reproducibility
-        # Fit PCA on the larger unsupervised dataset
-        pca.fit(X_unsup)
-        print(f"PCA fitted. Explained variance ratio (top 100 components): {np.sum(pca.explained_variance_ratio_):.4f}")
+def test_directory_supervised():
+    """Load dir_sup model, test on TEST dir (neg/pos), remember path."""
+    if not os.path.exists("dir_sup_model.joblib"):
+        print("No directory-based model found. Train first.")
+        return
 
-        # --- Transform Labeled Data ---
-        print("Transforming labeled data using fitted PCA...")
-        # Apply the learned PCA transformation to the labeled feature set
-        X_reduced = pca.transform(X_labeled)
-        print(f"Transformed labeled data shape: {X_reduced.shape}")
+    td = settings.get("dir_test","")
+    if not td or not os.path.isdir(td):
+        if settings.get("log_dir_test_debug", True):
+            print("Requesting TEST directory via GUI.")
+        root=Tk(); root.withdraw()
+        td = filedialog.askdirectory(title="Select TEST directory")
+        root.update()
+        if not td:
+            print("Cancelled.")
+            return
+        settings["dir_test"] = td
+        save_settings()
+    else:
+        if settings.get("log_dir_test_debug", True):
+            print(f"Using saved dir_test: {td}")
 
-        # --- Train/Test Split ---
-        print("Splitting labeled data into train and test sets...")
-        # Split the reduced labeled data into training and testing sets (80% train, 20% test)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X_reduced, y_labeled, test_size=0.2, random_state=42, stratify=y_labeled # Added stratify
+    vect, clf = joblib.load("dir_sup_model.joblib")
+    texts, labels = [], []
+    for lbl,val in [('neg',0),('pos',1)]:
+        sub=os.path.join(td,lbl)
+        if not os.path.isdir(sub): continue
+        for fn in os.listdir(sub):
+            if fn.endswith('.txt'):
+                texts.append(open(os.path.join(sub,fn),encoding='utf-8').read())
+                labels.append(val)
+
+    X = vect.transform(texts)
+    preds = clf.predict(X)
+    print("\nDirectory-Based Test Report:")
+    print(classification_report(labels, preds, target_names=['neg','pos']))
+
+# ─── Lexicon loader (uses settings) ──────────────────────────────────────────
+
+def select_and_load_lexicon() -> Dict[str,float]:
+    """
+    If a lexicon_path is saved, use it; otherwise ask once and remember it.
+    """
+    lp = settings.get("lexicon_path","")
+    if not lp or not os.path.exists(lp):
+        if settings.get("log_lexicon_debug", True):
+            print("Prompting for lexicon file via GUI.")
+        root=Tk(); root.withdraw()
+        lp = filedialog.askopenfilename(
+            title="Select Lexicon CSV", filetypes=[("CSV files","*.csv")]
         )
-        print(f"Training set shape: {X_train.shape}, Test set shape: {X_test.shape}")
+        root.update()
+        if not lp:
+            print("No file selected.")
+            return {}
+        settings["lexicon_path"] = lp
+        save_settings()
+    else:
+        if settings.get("log_lexicon_debug", True):
+            print(f"Using saved lexicon_path: {lp}")
 
-        # --- Model Training ---
-        print("Training logistic regression model...")
-        # Initialize a Logistic Regression classifier
-        clf = LogisticRegression(max_iter=1000, random_state=42) # Increased max_iter, added random_state
-        # Train the classifier on the reduced-dimension training data
-        clf.fit(X_train, y_train)
-        print("Training complete.")
+    df = pd.read_csv(lp)
+    if 'stemmed_word' not in df.columns or 'sentiment_score' not in df.columns:
+        print("CSV must have 'stemmed_word' and 'sentiment_score' columns.")
+        return {}
+    lex = dict(zip(df['stemmed_word'].astype(str), df['sentiment_score'].astype(float)))
+    print(f"Loaded lexicon with {len(lex)} entries.")
+    return lex
 
-        # --- Evaluation ---
-        print("Evaluating model on the test set...")
-        # Make predictions on the test set
-        predictions = clf.predict(X_test)
-        # Print a detailed classification report (precision, recall, F1-score)
-        print("\nClassification Report:\n")
-        try:
-            # Ensure there are predicted samples before generating report
-            if len(predictions) > 0:
-                 print(classification_report(y_test, predictions, target_names=['negative', 'positive']))
-            else:
-                 print("No predictions were made (Test set might be empty).")
-        except ValueError as e:
-            print(f"Could not generate classification report: {e}")
-
-
+# ─── Main Menu ───────────────────────────────────────────────────────────────
 
 def main():
-    """
-    Main function to initialize and run the sentiment analysis process.
-    """
-    # TODO: Load a sentiment lexicon from a file or define it here.
-    # Example: lexicon = {'good': 1.0, 'bad': -1.0, 'veri': 0.0, ...} # Stemmed words!
-    # A common lexicon is AFINN, VADER, SentiWordNet (requires processing)
-    # lexicon: Dict[str, float] = {    }
-    # print(f"Using basic example lexicon with {len(lexicon)} entries.")
+    analyzer = None
 
-    # Initialize the analyzer with the lexicon
-    # analyzer = MovieSentimentAnalyzer(lexicon)
+    while True:
+        print("\n=== Sentiment Analyzer Menu ===")
+        print("1. Lexicon-based analysis")
+        print("2. PCA + LR model")
+        print("3. Directory-based model")
+        print("4. Settings")
+        print("5. Exit")
+        choice = input("Choose an option: ").strip()
 
-    # Run the unsupervised training pipeline using GUI for file selection
-    # analyzer.run_unsup_training_gui()
+        if choice == '1':
+            if analyzer is None:
+                lex = select_and_load_lexicon()
+                if not lex:
+                    continue
+                analyzer = MovieSentimentAnalyzer(lex)
+            while True:
+                print("\n-- Lexicon-Based Submenu --")
+                print("1. Analyze single review (manual input)")
+                print("2. Analyze review from text file")
+                print("3. Back to main menu")
+                sub = input("Choose: ").strip()
+                if sub == '1':
+                    txt = input("Enter your review:\n> ")
+                    lbl, sc = analyzer.analyze_review(txt)
+                    print(f"Sentiment: {lbl}, Score: {sc:.2f}")
+                elif sub == '2':
+                    root=Tk(); root.withdraw()
+                    path = filedialog.askopenfilename(
+                        title="Select Review Text File", filetypes=[("Text files","*.txt")]
+                    )
+                    root.update()
+                    if not path or not os.path.exists(path):
+                        print("File not found.")
+                        continue
+                    with open(path,'r',encoding='utf-8') as f:
+                        review = f.read()
+                    lbl, sc = analyzer.analyze_review(review)
+                    print(f"Sentiment: {lbl}, Score: {sc:.2f}")
+                elif sub == '3':
+                    break
+                else:
+                    print("Invalid choice.")
 
-# Standard Python entry point check
+        elif choice == '2':
+            print("\n-- PCA + LR Submenu --")
+            print("1. Train PCA+LR model")
+            print("2. Test PCA+LR model")
+            sub = input("Choose: ").strip()
+            if sub == '1':
+                if analyzer is None:
+                    analyzer = MovieSentimentAnalyzer({})
+                analyzer.train_pca_lr()
+            elif sub == '2':
+                if analyzer is None:
+                    analyzer = MovieSentimentAnalyzer({})
+                analyzer.test_pca_lr()
+            else:
+                print("Invalid choice.")
+
+        elif choice == '3':
+            print("\n-- Directory-Based Submenu --")
+            print("1. Train directory-based model")
+            print("2. Test directory-based model")
+            sub = input("Choose: ").strip()
+            if sub == '1':
+                train_directory_supervised()
+            elif sub == '2':
+                test_directory_supervised()
+            else:
+                print("Invalid choice.")
+
+        elif choice == '4':
+            # Settings submenu
+            toggle_options = [
+                ("verbose_tokens", "Verbose token-level output"),
+                ("log_init", "Initialization messages"),
+                ("log_preprocess", "Text preprocessing debug"),
+                ("log_negation", "Negation handling debug"),
+                ("log_score_compute", "Score computation debug"),
+                ("log_lexicon_debug", "Lexicon loading debug"),
+                ("log_pca_training_debug", "PCA training debug"),
+                ("log_pca_test_debug", "PCA testing debug"),
+                ("log_dir_train_debug", "Directory training debug"),
+                ("log_dir_test_debug", "Directory testing debug"),
+                ("log_settings_load", "Settings load debug"),
+                ("log_settings_save", "Settings save debug")
+            ]
+            while True:
+                print("\n-- Settings --")
+                for idx, (key, desc) in enumerate(toggle_options, start=1):
+                    state = "ON" if settings.get(key, True) else "OFF"
+                    print(f"{idx}. Toggle {desc} (currently {state})")
+                print(f"{len(toggle_options)+1}. Clear all saved paths")
+                print(f"{len(toggle_options)+2}. Back to main menu")
+                sub = input("Choose: ").strip()
+                if sub.isdigit():
+                    idx = int(sub)
+                    if 1 <= idx <= len(toggle_options):
+                        key, desc = toggle_options[idx-1]
+                        settings[key] = not settings.get(key, True)
+                        save_settings()
+                        print(f"{desc} now {'ON' if settings[key] else 'OFF'}")
+                    elif idx == len(toggle_options)+1:
+                        for k in ["lexicon_path","pca_labeled","pca_unsup","pca_vocab","pca_test","dir_train","dir_test"]:
+                            settings[k] = ""
+                        save_settings()
+                        print("Cleared all saved file paths.")
+                    elif idx == len(toggle_options)+2:
+                        break
+                    else:
+                        print("Invalid choice.")
+                else:
+                    print("Invalid choice.")
+
+        elif choice == '5':
+            print("Goodbye!")
+            break
+
+        else:
+            print("Invalid selection.")
+
 if __name__ == '__main__':
     main()
