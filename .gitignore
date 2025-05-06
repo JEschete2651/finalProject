@@ -1,0 +1,11 @@
+# Ignore extracted raw review folders from Kaggle dataset
+DataSet/kaggle_dataset/train/pos/
+DataSet/kaggle_dataset/train/neg/
+DataSet/kaggle_dataset/train/unsup/
+
+DataSet/kaggle_dataset/test/pos/
+DataSet/kaggle_dataset/test/neg/
+
+# Keep the .7z archives
+!DataSet/kaggle_dataset/train/*.7z
+!DataSet/kaggle_dataset/test/*.7z
