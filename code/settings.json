@@ -1,11 +1,11 @@
 {
-  "lexicon_path": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/custom_lexicon.csv",
+  "lexicon_path": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/AFINN-en-165.csv",
   "pca_labeled": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train/labeledBow.feat",
   "pca_unsup": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train/unsupBow.feat",
   "pca_vocab": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train/imdb.vocab",
-  "pca_test": "",
-  "dir_train": "",
-  "dir_test": "",
+  "pca_test": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/test/labeledBow.feat",
+  "dir_train": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/train",
+  "dir_test": "D:/Users/judee/Google Drive/School/Classes/CPE593/finalProject/DataSet/kaggle_dataset/test",
   "verbose_tokens": true,
   "log_init": true,
   "log_preprocess": true,
@@ -16,6 +16,53 @@
   "log_pca_test_debug": true,
   "log_dir_train_debug": true,
   "log_dir_test_debug": true,
-  "log_settings_load": true,
-  "log_settings_save": true
+  "log_settings_load": false,
+  "log_settings_save": false,
+  "train_dir": "",
+  "test_dir": "",
+  "unsupervised_dir": "",
+  "model_save_dir": "models",
+  "log_training_debug": true,
+  "log_testing_debug": true,
+  "random_state": 42,
+  "cv_folds": 5,
+  "tfidf_max_features": 10000,
+  "pca_n_components": 100,
+  "lr_max_iter": 1000,
+  "param_grids": {
+    "tfidf_lr": {
+      "tfidf__max_df": [
+        0.75,
+        0.9,
+        1.0
+      ],
+      "tfidf__min_df": [
+        1,
+        2,
+        5
+      ],
+      "clf__C": [
+        0.1,
+        1,
+        10
+      ]
+    },
+    "tfidf_pca_lr": {
+      "tfidf__max_df": [
+        0.75,
+        0.9,
+        1.0
+      ],
+      "pca__n_components": [
+        50,
+        100,
+        150
+      ],
+      "clf__C": [
+        0.1,
+        1,
+        10
+      ]
+    }
+  }
 }
